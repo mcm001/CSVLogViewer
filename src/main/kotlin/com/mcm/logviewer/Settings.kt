@@ -1,4 +1,4 @@
-package org.ghrobotics.falcondashboard
+package com.mcm.logviewer
 
 import com.github.salomonbrys.kotson.fromJson
 import com.github.salomonbrys.kotson.registerTypeAdapter
@@ -12,41 +12,16 @@ import java.io.FileWriter
 
 
 object Settings {
-    val name = SimpleStringProperty("Baseline")
-    val reversed = SimpleBooleanProperty(false)
-    val clampedCubic = SimpleBooleanProperty(true)
-    val autoPathFinding = SimpleBooleanProperty(false)
-    val startVelocity = SimpleDoubleProperty(0.0)
-    val endVelocity = SimpleDoubleProperty(0.0)
-    val maxVelocity = SimpleDoubleProperty(10.0)
-    val maxAcceleration = SimpleDoubleProperty(4.0)
-    val maxCentripetalAcceleration = SimpleDoubleProperty(4.0)
-    val ip = SimpleStringProperty("127.0.1.1")
+    val ip = SimpleStringProperty("10.59.40.2")
 
     private val gson = GsonBuilder().registerTypeAdapter<Settings> {
         write {
             beginArray()
-            value(it.reversed.value)
-            value(it.clampedCubic.value)
-            value(it.autoPathFinding.value)
-            value(it.startVelocity.value)
-            value(it.endVelocity.value)
-            value(it.maxVelocity.value)
-            value(it.maxAcceleration.value)
-            value(it.maxCentripetalAcceleration.value)
-            value(it.ip.value)
+            value(ip.value)
             endArray()
         }
         read {
             beginArray()
-            reversed.set(nextBoolean())
-            clampedCubic.set(nextBoolean())
-            autoPathFinding.set(nextBoolean())
-            startVelocity.set(nextDouble())
-            endVelocity.set(nextDouble())
-            maxVelocity.set(nextDouble())
-            maxAcceleration.set(nextDouble())
-            maxCentripetalAcceleration.set(nextDouble())
             ip.set(nextString())
             endArray()
             return@read Settings

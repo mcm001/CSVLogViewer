@@ -10,7 +10,9 @@ mainClassName = "org.ghrobotics.falcondashboard.MainKt"
 
 repositories {
     jcenter()
+    mavenCentral()
     maven { url "https://jitpack.io" }
+    maven { url "https://mvnrepository.com" }
 }
 
 dependencies {
@@ -49,6 +51,12 @@ dependencies {
     runtime "edu.wpi.first.ntcore:ntcore-jni:2020.2.2:windowsx86-64"
     runtime "edu.wpi.first.ntcore:ntcore-jni:2020.2.2:linuxx86-64"
     runtime "edu.wpi.first.ntcore:ntcore-jni:2020.2.2:osxx86-64"
+
+    // SFTP client
+    compile 'com.jcraft:jsch:0.1.55'
+
+    // CSV parsing
+    compile 'com.fasterxml.jackson.dataformat:jackson-dataformat-csv:2.9.9'
 }
 
 compileKotlin {
