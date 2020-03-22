@@ -1,10 +1,6 @@
 package com.mcm.logviewer
 
-import edu.wpi.first.wpilibj.trajectory.TrajectoryGenerator
-import javafx.stage.StageStyle
-import com.mcm.logviewer.generator.fragments.InvalidTrajectoryFragment
 import tornadofx.App
-import tornadofx.find
 import tornadofx.launch
 
 class Main : App(MainView::class) {

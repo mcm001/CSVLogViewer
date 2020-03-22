@@ -2,19 +2,27 @@ package com.mcm.logviewer.remote
 
 import com.jcraft.jsch.ChannelSftp
 import com.jcraft.jsch.JSch
+import java.io.BufferedReader
+import java.io.InputStreamReader
 import java.net.InetAddress
 import java.util.*
 
 
 fun main() {
-    println(RemoteLogFile.getFileList("/home/pi", "10.0.0.30", "pi", "witty.moose"))
+//    println(RemoteLogFile.getFileList("/home/pi", "10.0.0.30", "pi", "witty.moose"))
+    RemoteLogFile.getFile("/home/pi", "data.csv", "10.0.0.30", "pi", "witty.moose")
 }
 
 object RemoteLogFile {
 
-    val jsch = JSch()
+    private val jsch = JSch()
 
-    fun getFileList(directory: String, host: String? = null, username: String = "lvuser", password: String = ""): List<String> {
+    fun getFileList(
+        directory: String,
+        host: String? = null,
+        username: String = "lvuser",
+        password: String = ""
+    ): List<String> {
         val hostName = host ?: getRoborioIP()
         val session = jsch.getSession(username, hostName, 22)
         session.setConfig("StrictHostKeyChecking", "no")
@@ -30,6 +38,40 @@ object RemoteLogFile {
         channel.disconnect()
         session.disconnect()
         return files.map { it.filename }.filter { !(it.matches(Regex(".")) || it.matches(Regex(".."))) }
+    }
+
+    fun getFile(
+        directory: String,
+        fileName: String,
+        host: String? = null,
+        username: String = "lvuser",
+        password: String = ""
+    ): List<String> {
+        val hostName = host ?: getRoborioIP()
+        val session = jsch.getSession(username, hostName, 22)
+        session.setConfig("StrictHostKeyChecking", "no")
+        session.setPassword(password)
+        session.connect()
+
+        val channel = session.openChannel("sftp") as ChannelSftp
+        channel.connect()
+
+        channel.cd(directory)
+        val fileStream = channel.get(fileName)
+
+        val br = BufferedReader(InputStreamReader(fileStream))
+        var line: String?
+        var ret = arrayListOf<String>()
+        while (br.readLine().also { line = it } != null) {
+            println(line)
+            if(!line.isNullOrEmpty() && line != null) ret.add(line!!)
+        }
+        println(ret)
+        br.close()
+
+        channel.disconnect()
+        session.disconnect()
+        return ret
     }
 
     fun getRoborioIP(teamNum: Int? = null): String? {

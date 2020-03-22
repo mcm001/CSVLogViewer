@@ -7,9 +7,11 @@ import javafx.scene.chart.LineChart
 import javafx.scene.chart.NumberAxis
 import javafx.scene.chart.XYChart
 import javafx.scene.chart.XYChart.Series
+import javafx.scene.control.CheckBox
 import javafx.scene.paint.Color
 import javafx.stage.FileChooser
 import kfoenix.jfxbutton
+import kfoenix.jfxcheckbox
 import kfoenix.jfxtextfield
 import tornadofx.*
 import java.io.File
@@ -18,8 +20,9 @@ typealias LogFile = ObservableList<List<Number>>
 
 class MainView : View("Log Viewer") {
 
-    val xAxis = NumberAxis()
-    val yAxis = NumberAxis()
+    private val xAxis = NumberAxis()
+    private val yAxis = NumberAxis()
+
     private val mainChart = LineChart(xAxis, yAxis)
         .apply {
             title = "chart"
@@ -27,7 +30,7 @@ class MainView : View("Log Viewer") {
                 backgroundColor = multi(Color.LIGHTGRAY)
             }
             lookup(".chart-plot-background").style +=
-                        "-fx-background-size: stretch;" +
+                "-fx-background-size: stretch;" +
                         "-fx-background-position: top right;" +
                         "-fx-background-repeat: no-repeat;"
 
@@ -40,6 +43,14 @@ class MainView : View("Log Viewer") {
             isHorizontalGridLinesVisible = false
         }
 
+    private val seriesBox = vbox {
+        style {
+            paddingAll = 20.0
+//                maxWidth = 300.px
+            spacing = 5.px
+        }
+    }
+
     private var currentLogFileName = SimpleStringProperty("No Log File Selected")
 
     override val root: Parent = vbox {
@@ -48,16 +59,29 @@ class MainView : View("Log Viewer") {
         prefHeight = 705.0
         prefWidth = 1200.0
 
+        style {
+            paddingAll = 20.0
+//                maxWidth = 300.px
+            spacing = 5.px
+        }
+
         hbox {
 
+            style {
+                paddingAll = 20.0
+//                maxWidth = 300.px
+                spacing = 5.px
+            }
+
             jfxbutton("Select Local Log File") {
+
                 action {
                     val files = chooseFile(
                         title = "Select Log File",
                         filters = arrayOf(FileChooser.ExtensionFilter("CSV Files", "*.csv"))
                     ) { initialDirectory = File("./temp") }
                     val lines = files.firstOrNull()?.readText()?.split("\n") ?: listOf()
-                    if(lines.isEmpty()) return@action
+                    if (lines.isEmpty()) return@action
                     val parsedData = CSVLogParser.parseData(lines)
                     println("data:\n${parsedData}")
                     currentLogFileName.set(files.firstOrNull()?.name ?: "")
@@ -88,16 +112,16 @@ class MainView : View("Log Viewer") {
         }
 
         mainChart.attachTo(this)
+        seriesBox.attachTo(this)
     }
 
     private fun updateChart(parsedData: List<Pair<String, List<Number>>>) {
         mainChart.data.clear()
+        seriesBox.clear()
 
         val xAxisList = parsedData.first().second // time is always the first column
         val data = parsedData.subList(1, parsedData.size)
 
-        xAxis.lowerBound = xAxisList[0].toDouble()
-        xAxis.upperBound = xAxisList.last().toDouble()
         data.forEachIndexed { index, it ->
             val series = Series<Number, Number>()
             series.name = it.first // set name to the header of that column
@@ -109,6 +133,26 @@ class MainView : View("Log Viewer") {
             }
             println("adding series:\n$series")
             mainChart.data.add(series)
+
+            // add an hbox with the series name, and a visable tick mark
+            seriesBox.add(
+                jfxcheckbox(it.first) {
+                    this.isSelected = true
+                    selectedProperty().addListener { _, _, newValue ->
+                        try {
+                            if (!newValue) {
+                                println("hiding series!")
+                                mainChart.data[mainChart.data.indexOf(series)].node.isVisible = false
+                            } else {
+                                println("un-hiding series")
+                                mainChart.data[mainChart.data.indexOf(series)].node.isVisible = true
+                            }
+                            mainChart.autosize()
+                        } catch (e: IllegalArgumentException) {
+                            e.printStackTrace()
+                        }
+                    }
+                })
         }
     }
 }
