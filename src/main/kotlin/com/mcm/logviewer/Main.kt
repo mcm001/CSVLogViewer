@@ -1,8 +1,8 @@
-package org.ghrobotics.falcondashboard
+package com.mcm.logviewer
 
 import edu.wpi.first.wpilibj.trajectory.TrajectoryGenerator
 import javafx.stage.StageStyle
-import org.ghrobotics.falcondashboard.generator.fragments.InvalidTrajectoryFragment
+import com.mcm.logviewer.generator.fragments.InvalidTrajectoryFragment
 import tornadofx.App
 import tornadofx.find
 import tornadofx.launch
@@ -10,11 +10,6 @@ import tornadofx.launch
 class Main : App(MainView::class) {
     init {
         Settings
-        Network
-
-        TrajectoryGenerator.setErrorHandler { _, _ ->  
-            find<InvalidTrajectoryFragment>().openModal(StageStyle.UTILITY)
-        }
     }
 
     override fun stop() {
